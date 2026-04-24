@@ -1,0 +1,33 @@
+name: Video Editor
+
+on:
+  push:
+    paths:
+      - 'input/**'
+
+jobs:
+  edit-video:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install FFmpeg
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y ffmpeg
+
+      - name: Run Video Edit Script
+        run: |
+          chmod +x scripts/edit.sh
+          bash scripts/edit.sh
+
+      - name: Upload to Google Drive
+        uses: adityak74/google-drive-upload-git-action@main
+        with:
+          credentials: ${{ secrets.GOOGLE_DRIVE_CREDENTIALS }}
+          filename: output/final_video.mp4
+          folderId: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
+          overwrite: "true"
