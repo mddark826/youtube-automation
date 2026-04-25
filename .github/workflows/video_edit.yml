@@ -32,10 +32,46 @@ jobs:
   process:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v4
       
-      - name: Parse clips
+      - name: Install FFmpeg & jq
         run: |
-          echo "Video ID: ${{ github.event.inputs.video_id }}"
-          echo "Clips: ${{ github.event.inputs.clips }}"
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg jq
+
+      - name: Create Input/Output Directories
+        run: |
+          mkdir -p input/clips input/audio input/music output
+
+      - name: Download Audio & Music
+        run: |
+          # (ভবিষ্যতে আপনি চাইলে ভয়েসওভারের URL ডাউনলোড করার কোড এখানে বসাতে পারেন)
+          
+          # Music URL থাকলে ডাউনলোড করো
+          if [ "${{ github.event.inputs.music_url }}" != "" ]; then
+            wget -O input/music/background.mp3 "${{ github.event.inputs.music_url }}"
+          fi
+
+      - name: Parse and Download Clips
+        run: |
+          # n8n থেকে আসা JSON স্ট্রিং থেকে ভিডিও URL বের করে ডাউনলোড করা
+          echo '${{ github.event.inputs.clips }}' > clips.json
+          
+          INDEX=1
+          jq -r '.[].video_url' clips.json | while read url; do
+            echo "Downloading clip $INDEX..."
+            wget -q -O "input/clips/clip_$(printf "%02d" $INDEX).mp4" "$url"
+            INDEX=$((INDEX+1))
+          done
+
+      - name: Make script executable and run Edit.sh
+        run: |
+          chmod +x scripts/edit.sh
+          ./scripts/edit.sh
+
+      - name: Upload Final Video
+        uses: actions/upload-artifact@v4
+        with:
+          name: Final-Video-${{ github.event.inputs.video_id }}
+          path: output/final_video.mp4
