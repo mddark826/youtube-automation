@@ -1,9 +1,26 @@
 name: Video Editor
 
 on:
-  push:
-    paths:
-      - 'input/**'
+  workflow_dispatch:
+    inputs:
+      video_id:
+        description: 'Video ID'
+        required: true
+      title:
+        description: 'Video Title'
+        required: true
+      voiceover:
+        description: 'Voiceover URL'
+        required: true
+      music_url:
+        description: 'Music URL'
+        required: true
+      selected_topic:
+        description: 'Selected Topic'
+        required: true
+      clips:
+        description: 'Clips JSON'
+        required: true
 
 jobs:
   edit-video:
