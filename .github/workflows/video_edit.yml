@@ -6,45 +6,36 @@ on:
       video_id:
         description: 'Video ID'
         required: true
+        type: string
       title:
         description: 'Video Title'
         required: true
+        type: string
       voiceover:
-        description: 'Voiceover URL'
+        description: 'Voiceover Script'
         required: true
+        type: string
       music_url:
         description: 'Music URL'
-        required: true
+        required: false
+        type: string
       selected_topic:
         description: 'Selected Topic'
         required: true
+        type: string
       clips:
-        description: 'Clips JSON'
+        description: 'Clips JSON string'
         required: true
+        type: string
 
 jobs:
-  edit-video:
+  process:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-
     steps:
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Install FFmpeg
+      
+      - name: Parse clips
         run: |
-          sudo apt-get update -y
-          sudo apt-get install -y ffmpeg
-
-      - name: Run Video Edit Script
-        run: |
-          chmod +x scripts/edit.sh
-          bash scripts/edit.sh
-
-      - name: Upload to Google Drive
-        uses: adityak74/google-drive-upload-git-action@main
-        with:
-          credentials: ${{ secrets.GOOGLE_DRIVE_CREDENTIALS }}
-          filename: output/final_video.mp4
-          folderId: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
-          overwrite: "true"
+          echo "Video ID: ${{ github.event.inputs.video_id }}"
+          echo "Clips: ${{ github.event.inputs.clips }}"
